@@ -2,6 +2,10 @@
 
 Kabar is a full-stack real-time messaging app: one-on-one and group chats, topics, presence, file uploads, voice/video calls (WebRTC), and light/dark UI.
 
+## Live demo
+
+Try the deployed app: **[https://kabar.onrender.com](https://kabar.onrender.com)**
+
 ## Monorepo layout
 
 | Package | Description |
