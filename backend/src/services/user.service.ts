@@ -11,3 +11,23 @@ export const getUsersService = async (userId: string) => {
 
   return users;
 };
+
+export const updateProfileService = async (
+  userId: string,
+  data: {
+    name?: string;
+    description?: string;
+    status?: string;
+    avatar?: string;
+  }
+) => {
+  const user = await UserModel.findByIdAndUpdate(userId, data, {
+    new: true,
+  }).select("-password");
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+};

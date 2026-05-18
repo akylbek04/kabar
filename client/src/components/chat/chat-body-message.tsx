@@ -3,7 +3,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import type { MessageType } from "@/types/chat.type";
 import AvatarWithBadge from "../avatar-with-badge";
-import { formatChatTime } from "@/lib/helper";
+import {
+  formatChatTime,
+  getMediaUrl,
+  getFileNameFromUrl,
+  isImageUrl,
+} from "@/lib/helper";
 import { Button } from "../ui/button";
 import { ReplyIcon } from "lucide-react";
 
@@ -84,17 +89,32 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
                 "
                 >
                   {message?.replyTo?.content ||
-                    (message?.replyTo?.image ? "📷 Photo" : "")}
+                    (message?.replyTo?.image
+                      ? isImageUrl(message.replyTo.image)
+                        ? "📷 Photo"
+                        : "📎 Attachment"
+                      : "")}
                 </p>
               </div>
             )}
 
             {message?.image && (
-              <img
-                src={message?.image || ""}
-                alt=""
-                className="rounded-lg max-w-xs"
-              />
+              isImageUrl(message.image) ? (
+                <img
+                  src={getMediaUrl(message.image)}
+                  alt=""
+                  className="rounded-lg max-w-xs"
+                />
+              ) : (
+                <a
+                  href={getMediaUrl(message.image)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-primary underline underline-offset-2"
+                >
+                  {getFileNameFromUrl(message.image)}
+                </a>
+              )
             )}
 
             {message.content && <p>{message.content}</p>}

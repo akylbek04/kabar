@@ -15,6 +15,8 @@ export interface UserType {
   name: string;
   email: string;
   avatar?: string | null;
+  description?: string | null;
+  status?: string | null;
   isAI?: boolean;
   createdAt: Date;
   updatedAt: Date;

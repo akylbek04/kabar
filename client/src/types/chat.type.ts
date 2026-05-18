@@ -36,6 +36,6 @@ export type CreateChatType = {
 export type CreateMessageType = {
   chatId: string | null;
   content?: string;
-  image?: string;
+  file?: File;
   replyTo?: MessageType | null;
 };

@@ -8,6 +8,7 @@ import ChatListHeader from "./chat-list-header";
 import { useSocket } from "@/hooks/use-socket";
 import type { ChatType } from "@/types/chat.type";
 import type { MessageType } from "../../types/chat.type";
+import type { UserType } from "@/types/auth.type";
 
 const ChatList = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const ChatList = () => {
     isChatsLoading,
     addNewChat,
     updateChatLastMessage,
+    updateUserInChats,
   } = useChat();
   const { user } = useAuth();
   const currentUserId = user?._id || null;
@@ -71,6 +73,21 @@ const ChatList = () => {
       socket.off("chat:update", handleChatUpdate);
     };
   }, [socket, updateChatLastMessage]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleProfileUpdate = (updatedUser: UserType) => {
+      console.log("Received profile update", updatedUser);
+      updateUserInChats(updatedUser);
+    };
+
+    socket.on("user:profile-updated", handleProfileUpdate);
+
+    return () => {
+      socket.off("user:profile-updated", handleProfileUpdate);
+    };
+  }, [socket, updateUserInChats]);
 
   const onRoute = (id: string) => {
     navigate(`/chat/${id}`);

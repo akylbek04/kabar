@@ -1,4 +1,5 @@
 import { ErrorRequestHandler } from "express";
+import multer from "multer";
 import { HTTPSTATUS } from "../config/http.config";
 import { AppError, ErrorCodes } from "../utils/app-error";
 
@@ -9,6 +10,18 @@ export const errorHandler: ErrorRequestHandler = (
   next
 ): any => {
   console.log(`Error occurred: ${req.path}`, error);
+
+  if (error instanceof multer.MulterError) {
+    const message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "File is too large"
+        : error.message;
+
+    return res.status(HTTPSTATUS.BAD_REQUEST).json({
+      message,
+      errorCode: ErrorCodes.ERR_BAD_REQUEST,
+    });
+  }
 
   if (error instanceof AppError) {
     return res.status(error.statusCode).json({

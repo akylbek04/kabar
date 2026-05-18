@@ -191,7 +191,7 @@ const UserAvatar = memo(({ user }: { user: UserType }) => (
     <AvatarWithBadge name={user.name} src={user.avatar ?? ""} />
     <div className="flex-1 min-w-0">
       <h5 className="text-[13.5px] font-medium truncate">{user.name}</h5>
-      <p className="text-xs text-muted-foreground">Hey there! I'm using whop</p>
+      <p className="text-xs text-muted-foreground">Hey there! I'm using Kabar</p>
     </div>
   </>
 ));

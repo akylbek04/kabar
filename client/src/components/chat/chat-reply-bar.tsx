@@ -1,4 +1,5 @@
 import type { MessageType } from "@/types/chat.type";
+import { isImageUrl } from "@/lib/helper";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 
@@ -29,7 +30,9 @@ const ChatReplyBar = ({ replyTo, currentUserId, onCancel }: Props) => {
         <div className="flex-1">
           <h5 className="font-medium">{senderName}</h5>
           {replyTo?.image ? (
-            <p className="text-muted-foreground">📷 Photo</p>
+            <p className="text-muted-foreground">
+              {isImageUrl(replyTo.image) ? "📷 Photo" : "📎 Attachment"}
+            </p>
           ) : (
             <p
               className="max-w-4xl

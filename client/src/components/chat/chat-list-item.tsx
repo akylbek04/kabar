@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import type { ChatType } from "@/types/chat.type";
 import { useLocation } from "react-router-dom";
 import AvatarWithBadge from "../avatar-with-badge";
-import { formatChatTime } from "../../lib/helper";
+import { formatChatTime, isImageUrl } from "../../lib/helper";
 
 interface PropsType {
   chat: ChatType;
@@ -14,27 +14,29 @@ const ChatListItem = ({ chat, currentUserId, onClick }: PropsType) => {
   const { pathname } = useLocation();
   const { lastMessage, createdAt } = chat;
 
-  const { name, avatar, isOnline, isGroup } = getOtherUserAndGroup(
+  const { name, avatar, isOnline, isGroup, status } = getOtherUserAndGroup(
     chat,
     currentUserId
   );
 
   const getLastMessageText = () => {
     if (!lastMessage) {
-      return isGroup
-        ? chat.createdBy === currentUserId
+      if (isGroup) {
+        return chat.createdBy === currentUserId
           ? "Group created"
-          : "You were added"
-        : "Send a message";
+          : "You were added";
+      }
+      return status || "Send a message";
     }
-    if (lastMessage.image) return "📷 Photo";
+    if (lastMessage.image) {
+      return isImageUrl(lastMessage.image) ? "📷 Photo" : "📎 Attachment";
+    }
 
     if (isGroup && lastMessage.sender) {
-      return `${
-        lastMessage.sender._id === currentUserId
+      return `${lastMessage.sender._id === currentUserId
           ? "You"
           : lastMessage.sender.name
-      }: ${lastMessage.content}`;
+        }: ${lastMessage.content}`;
     }
 
     return lastMessage.content;

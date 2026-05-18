@@ -37,6 +37,7 @@ interface ChatState {
   addNewChat: (newChat: ChatType) => void;
   updateChatLastMessage: (chatId: string, lastMessage: MessageType) => void;
   addNewMessage: (chatId: string, message: MessageType) => void;
+  updateUserInChats: (updatedUser: UserType) => void;
 }
 
 export const useChat = create<ChatState>()((set, get) => ({
@@ -107,28 +108,29 @@ export const useChat = create<ChatState>()((set, get) => ({
 
   sendMessage: async (payload: CreateMessageType) => {
     set({ isSendingMsg: true });
-    const { chatId, replyTo, content, image } = payload;
+    const { chatId, replyTo, content, file } = payload;
     const { user } = useAuth.getState();
 
     if (!chatId || !user?._id) return;
 
     const tempUserId = generateUUID();
+    const tempImageUrl = file
+      ? file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : file.name
+      : null;
 
     const tempMessage = {
       _id: tempUserId,
       chatId,
       content: content || "",
-      image: image || null,
+      image: tempImageUrl,
       sender: user,
       replyTo: replyTo || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "sending...",
     };
-
-    // if (isAI) {
-    //  // AI Feature Source code link =>
-    // }
 
     set((state) => {
       if (state.singleChat?.chat?._id !== chatId) return state;
@@ -141,14 +143,21 @@ export const useChat = create<ChatState>()((set, get) => ({
     });
 
     try {
-      const { data } = await API.post("/chat/message/send", {
-        chatId,
-        content,
-        image,
-        replyToId: replyTo?._id,
+      const formData = new FormData();
+      formData.append("chatId", chatId);
+      if (content?.trim()) formData.append("content", content.trim());
+      if (replyTo?._id) formData.append("replyToId", replyTo._id);
+      if (file) formData.append("file", file);
+
+      const { data } = await API.post("/chat/message/send", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       const { userMessage } = data;
-      //replace the temp user message
+
+      if (tempImageUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(tempImageUrl);
+      }
+
       set((state) => {
         if (!state.singleChat) return state;
         return {
@@ -161,6 +170,9 @@ export const useChat = create<ChatState>()((set, get) => ({
         };
       });
     } catch (error: any) {
+      if (tempImageUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(tempImageUrl);
+      }
       toast.error(error?.response?.data?.message || "Failed to send message");
     } finally {
       set({ isSendingMsg: false });
@@ -208,5 +220,46 @@ export const useChat = create<ChatState>()((set, get) => ({
         },
       });
     }
+  },
+
+  updateUserInChats: (updatedUser: UserType) => {
+    set((state) => {
+      const replaceUser = (user: UserType) =>
+        user._id === updatedUser._id ? { ...user, ...updatedUser } : user;
+
+      // Update participants & lastMessage sender in all chats
+      const chats = state.chats.map((chat) => ({
+        ...chat,
+        participants: chat.participants.map(replaceUser),
+        lastMessage: chat.lastMessage
+          ? {
+            ...chat.lastMessage,
+            sender: chat.lastMessage.sender
+              ? replaceUser(chat.lastMessage.sender)
+              : null,
+          }
+          : chat.lastMessage,
+      }));
+
+      // Update users list
+      const users = state.users.map(replaceUser);
+
+      // Update single chat view (participants + messages)
+      const singleChat = state.singleChat
+        ? {
+          chat: {
+            ...state.singleChat.chat,
+            participants:
+              state.singleChat.chat.participants.map(replaceUser),
+          },
+          messages: state.singleChat.messages.map((msg) => ({
+            ...msg,
+            sender: msg.sender ? replaceUser(msg.sender) : null,
+          })),
+        }
+        : null;
+
+      return { chats, users, singleChat };
+    });
   },
 }));

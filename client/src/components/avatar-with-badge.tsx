@@ -1,6 +1,7 @@
 import groupImg from "@/assets/group-img.png";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { cn } from "@/lib/utils";
+import { getMediaUrl } from "@/lib/helper";
 
 interface Props {
   name: string;
@@ -16,10 +17,10 @@ const AvatarWithBadge = ({
   src,
   isOnline,
   isGroup = false,
-  size = "w-9 h-9",
+  size = "w-8 h-8",
   className,
 }: Props) => {
-  const avatar = isGroup ? groupImg : src || "";
+  const avatar = isGroup ? groupImg : getMediaUrl(src);
 
   return (
     <div

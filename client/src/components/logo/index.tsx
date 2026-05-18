@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import logoSvg from "@/assets/whop-logo.svg";
+import logoDark from "@/assets/kabar_dark.png";
+import logoLight from "@/assets/kabar_light.png";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -16,10 +17,17 @@ const Logo = ({
   textClass,
 }: LogoProps) => (
   <Link to={url} className="flex items-center gap-2 w-fit">
-    <img src={logoSvg} alt="Whop" className={cn(imgClass)} />
+    <span
+      className={cn("inline-flex shrink-0", imgClass)}
+      role="img"
+      aria-label="Kabar"
+    >
+      <img src={logoLight} alt="" className="size-full dark:hidden" />
+      <img src={logoDark} alt="" className="hidden size-full dark:block" />
+    </span>
     {showText && (
       <span className={cn("font-semibold text-lg leading-tight", textClass)}>
-        Whop.
+        Kabar
       </span>
     )}
   </Link>

@@ -13,10 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import AvatarWithBadge from "./avatar-with-badge";
+import { useNavigate } from "react-router-dom";
 
 const AsideBar = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
 
   const isOnline = isUserOnline(user?._id);
 
@@ -34,7 +36,7 @@ const AsideBar = () => {
       >
         <Logo
           url={PROTECTED_ROUTES.CHAT}
-          imgClass="size-7"
+          imgClass="size-8 mt-2"
           textClass="text-white"
           showText={false}
         />
@@ -89,6 +91,7 @@ const AsideBar = () => {
               align="end"
             >
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => navigate(PROTECTED_ROUTES.PROFILE)}>Profile</DropdownMenuItem>
               <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

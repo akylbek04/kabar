@@ -10,6 +10,10 @@ import { Form, FormField, FormItem } from "../ui/form";
 import { Input } from "../ui/input";
 import ChatReplyBar from "./chat-reply-bar";
 import { useChat } from "@/hooks/use-chat";
+import {
+  formatMaxFileSize,
+  MESSAGE_FILE_MAX_BYTES,
+} from "@/lib/helper";
 
 interface Props {
   chatId: string | null;
@@ -29,8 +33,9 @@ const ChatFooter = ({
 
   const { sendMessage, isSendingMsg } = useChat();
 
-  const [image, setImage] = useState<string | null>(null);
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const form = useForm({
     resolver: zodResolver(messageSchema),
@@ -39,43 +44,50 @@ const ChatFooter = ({
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (selectedFile.size > MESSAGE_FILE_MAX_BYTES) {
+      toast.error(`File must be under ${formatMaxFileSize(MESSAGE_FILE_MAX_BYTES)}`);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => setImage(reader.result as string);
-    reader.readAsDataURL(file);
+    setFile(selectedFile);
+
+    if (selectedFile.type.startsWith("image/")) {
+      setFilePreview(URL.createObjectURL(selectedFile));
+    } else {
+      setFilePreview(null);
+    }
   };
 
-  const handleRemoveImage = () => {
-    setImage(null);
-    if (imageInputRef.current) imageInputRef.current.value = "";
+  const handleRemoveFile = () => {
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    setFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const onSubmit = (values: { message?: string }) => {
     if (isSendingMsg) return;
-    if (!values.message?.trim() && !image) {
-      toast.error("Please enter a message or select an image");
+    if (!values.message?.trim() && !file) {
+      toast.error("Please enter a message or attach a file");
       return;
     }
-    const payload = {
+
+    sendMessage({
       chatId,
       content: values.message,
-      image: image || undefined,
+      file: file || undefined,
       replyTo: replyTo,
-    };
-    //Send Message
-    sendMessage(payload);
+    });
 
     onCancelReply();
-    handleRemoveImage();
+    handleRemoveFile();
     form.reset();
   };
+
   return (
     <>
       <div
@@ -84,13 +96,23 @@ const ChatFooter = ({
        bg-card border-t border-border py-4
       "
       >
-        {image && !isSendingMsg && (
+        {file && !isSendingMsg && (
           <div className="max-w-6xl mx-auto px-8.5">
             <div className="relative w-fit">
-              <img
-                src={image}
-                className="object-contain h-16 bg-muted min-w-16"
-              />
+              {filePreview ? (
+                <img
+                  src={filePreview}
+                  alt={file.name}
+                  className="object-contain h-16 bg-muted min-w-16"
+                />
+              ) : (
+                <div className="flex items-center gap-2 h-16 px-3 bg-muted rounded-md min-w-32">
+                  <Paperclip className="h-4 w-4 shrink-0" />
+                  <span className="text-sm truncate max-w-[200px]">
+                    {file.name}
+                  </span>
+                </div>
+              )}
 
               <Button
                 type="button"
@@ -100,7 +122,7 @@ const ChatFooter = ({
                  bg-black/50 text-white rounded-full
                  cursor-pointer
                 "
-                onClick={handleRemoveImage}
+                onClick={handleRemoveFile}
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -121,17 +143,17 @@ const ChatFooter = ({
                 size="icon"
                 disabled={isSendingMsg}
                 className="rounded-full"
-                onClick={() => imageInputRef.current?.click()}
+                onClick={() => fileInputRef.current?.click()}
               >
                 <Paperclip className="h-4 w-4" />
               </Button>
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z"
                 disabled={isSendingMsg}
-                ref={imageInputRef}
-                onChange={handleImageChange}
+                ref={fileInputRef}
+                onChange={handleFileChange}
               />
             </div>
             <FormField

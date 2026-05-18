@@ -11,11 +11,18 @@ interface AuthState {
   isLoggingIn: boolean;
   isSigningUp: boolean;
   isAuthStatusLoading: boolean;
+  isUpdatingProfile: boolean;
 
   register: (data: RegisterType) => void;
   login: (data: LoginType) => void;
   logout: () => void;
   isAuthStatus: () => void;
+  updateProfile: (data: {
+    name?: string;
+    description?: string;
+    status?: string;
+    avatar?: File;
+  }) => void;
 }
 
 //Without Persist
@@ -24,6 +31,7 @@ export const useAuth = create<AuthState>()((set) => ({
   isSigningUp: false,
   isLoggingIn: false,
   isAuthStatusLoading: false,
+  isUpdatingProfile: false,
 
   register: async (data: RegisterType) => {
     set({ isSigningUp: true });
@@ -73,6 +81,28 @@ export const useAuth = create<AuthState>()((set) => ({
       //set({ user: null})
     } finally {
       set({ isAuthStatusLoading: false });
+    }
+  },
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const formData = new FormData();
+      if (data.name) formData.append("name", data.name);
+      if (data.description !== undefined) {
+        formData.append("description", data.description);
+      }
+      if (data.status !== undefined) formData.append("status", data.status);
+      if (data.avatar) formData.append("avatar", data.avatar);
+
+      const response = await API.put("/user/profile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      set({ user: response.data.user });
+      toast.success("Profile updated successfully");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      set({ isUpdatingProfile: false });
     }
   },
 }));

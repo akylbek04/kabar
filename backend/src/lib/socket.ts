@@ -27,7 +27,13 @@ export const initializeSocket = (httpServer: HTTPServer) => {
 
       if (!rawCookie) return next(new Error("Unauthorized"));
 
-      const token = rawCookie?.split("=")?.[1]?.trim();
+      const cookies = Object.fromEntries(
+        rawCookie.split(";").map((c) => {
+          const [key, ...rest] = c.trim().split("=");
+          return [key, rest.join("=")];
+        })
+      );
+      const token = cookies["accessToken"];
       if (!token) return next(new Error("Unauthorized"));
 
       const decodedToken = jwt.verify(token, Env.JWT_SECRET) as {
@@ -141,4 +147,9 @@ export const emitLastMessageToParticipants = (
   for (const participantId of participantIds) {
     io.to(`user:${participantId}`).emit("chat:update", payload);
   }
+};
+
+export const emitProfileUpdate = (updatedUser: any) => {
+  const io = getIO();
+  io.emit("user:profile-updated", updatedUser);
 };
