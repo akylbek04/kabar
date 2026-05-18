@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { create } from "zustand";
 //import { persist } from "zustand/middleware";
 import { useSocket } from "./use-socket";
+import { useNotifications } from "./use-notifications";
+import { updateDocumentTitle } from "@/lib/notification-utils";
 
 interface AuthState {
   user: UserType | null;
@@ -64,6 +66,8 @@ export const useAuth = create<AuthState>()((set) => ({
       await API.post("/auth/logout");
       set({ user: null });
       useSocket.getState().disconnectSocket();
+      useNotifications.getState().clearAll();
+      updateDocumentTitle(0);
       toast.success("Logout successfully");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Register failed");

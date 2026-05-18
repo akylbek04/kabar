@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import ChatListHeader from "./chat-list-header";
 import { useSocket } from "@/hooks/use-socket";
+import { useNotifications } from "@/hooks/use-notifications";
 import type { ChatType } from "@/types/chat.type";
 import type { MessageType } from "../../types/chat.type";
 import type { UserType } from "@/types/auth.type";
@@ -89,7 +90,10 @@ const ChatList = () => {
     };
   }, [socket, updateUserInChats]);
 
+  const markChatAsRead = useNotifications((s) => s.markChatAsRead);
+
   const onRoute = (id: string) => {
+    markChatAsRead(id);
     navigate(`/chat/${id}`);
   };
 

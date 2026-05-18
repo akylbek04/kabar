@@ -9,6 +9,7 @@ import { useChat } from "@/hooks/use-chat";
 import useChatId from "@/hooks/use-chat-id";
 import { useSocket } from "@/hooks/use-socket";
 import { getChatKind } from "@/lib/helper";
+import { useNotifications } from "@/hooks/use-notifications";
 import type { MessageType } from "@/types/chat.type";
 import { useEffect, useState } from "react";
 
@@ -33,11 +34,16 @@ const SingleChat = () => {
   const activeTopicId = singleChat?.activeTopicId || null;
   const isSuperGroup = chat ? getChatKind(chat) === "supergroup" : false;
   const activeTopic = topics.find((t) => t._id === activeTopicId);
+  const markChatAsRead = useNotifications((s) => s.markChatAsRead);
 
   useEffect(() => {
     if (!chatId) return;
     fetchSingleChat(chatId);
   }, [fetchSingleChat, chatId]);
+
+  useEffect(() => {
+    if (chatId) markChatAsRead(chatId);
+  }, [chatId, activeTopicId, markChatAsRead]);
 
   useEffect(() => {
     if (!chatId || !socket) return;

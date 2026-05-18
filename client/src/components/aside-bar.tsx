@@ -14,6 +14,7 @@ import {
 } from "./ui/dropdown-menu";
 import AvatarWithBadge from "./avatar-with-badge";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "@/hooks/use-notifications";
 
 const AsideBar = () => {
   const { user, logout } = useAuth();
@@ -21,6 +22,9 @@ const AsideBar = () => {
   const navigate = useNavigate();
 
   const isOnline = isUserOnline(user?._id);
+  const totalUnread = useNotifications((s) =>
+    Object.values(s.unreadByChat).reduce((sum, n) => sum + n, 0)
+  );
 
   return (
     <aside
@@ -34,12 +38,23 @@ const AsideBar = () => {
        w-full h-full px-1 pt-1 pb-6 flex flex-col
        items-center justify-between"
       >
-        <Logo
-          url={PROTECTED_ROUTES.CHAT}
-          imgClass="size-8 mt-2"
-          textClass="text-white"
-          showText={false}
-        />
+        <div className="relative">
+          <Logo
+            url={PROTECTED_ROUTES.CHAT}
+            imgClass="size-8 mt-2"
+            textClass="text-white"
+            showText={false}
+          />
+          {totalUnread > 0 && (
+            <span
+              className="absolute top-1 right-0 min-w-[16px] h-4 px-1
+              flex items-center justify-center rounded-full bg-destructive
+              text-[9px] font-bold text-white"
+            >
+              {totalUnread > 99 ? "99+" : totalUnread}
+            </span>
+          )}
+        </div>
 
         <div
           className="
