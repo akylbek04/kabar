@@ -1,7 +1,7 @@
 import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import { useSocket } from "@/hooks/use-socket";
-import type { ChatType } from "@/types/chat.type";
+import type { ChatKind, ChatType } from "@/types/chat.type";
 
 /** 10 MB — keep in sync with backend AVATAR_MAX_SIZE */
 export const AVATAR_MAX_BYTES = 10 * 1024 * 1024;
@@ -19,18 +19,29 @@ export const isUserOnline = (userId?: string) => {
   return onlineUsers.includes(userId);
 };
 
+export const getChatKind = (chat: ChatType): ChatKind => {
+  if (chat.chatType) return chat.chatType;
+  return chat.isGroup ? "group" : "dm";
+};
+
 export const getOtherUserAndGroup = (
   chat: ChatType,
   currentUserId: string | null
 ) => {
-  const isGroup = chat?.isGroup;
+  const chatKind = getChatKind(chat);
+  const isGroup = chatKind !== "dm";
+  const isSuperGroup = chatKind === "supergroup";
 
   if (isGroup) {
     return {
       name: chat.groupName || "Unnamed Group",
-      subheading: `${chat.participants.length} members`,
+      subheading: isSuperGroup
+        ? `${chat.participants.length} members · Super group`
+        : `${chat.participants.length} members`,
       avatar: "",
       isGroup,
+      isSuperGroup,
+      chatKind,
     };
   }
 
@@ -43,6 +54,8 @@ export const getOtherUserAndGroup = (
     avatar: other?.avatar || "",
     status: other?.status || "",
     isGroup: false,
+    isSuperGroup: false,
+    chatKind: "dm" as ChatKind,
     isOnline,
     isAI: other?.isAI || false,
   };

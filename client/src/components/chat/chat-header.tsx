@@ -8,13 +8,15 @@ import AvatarWithBadge from "../avatar-with-badge";
 interface Props {
   chat: ChatType;
   currentUserId: string | null;
+  topicTitle?: string;
 }
-const ChatHeader = ({ chat, currentUserId }: Props) => {
+const ChatHeader = ({ chat, currentUserId, topicTitle }: Props) => {
   const navigate = useNavigate();
   const { name, subheading, avatar, isOnline, isGroup } = getOtherUserAndGroup(
     chat,
     currentUserId
   );
+  const displayName = topicTitle ? `${name} · #${topicTitle}` : name;
 
   return (
     <div
@@ -40,7 +42,7 @@ const ChatHeader = ({ chat, currentUserId }: Props) => {
           isOnline={isOnline}
         />
         <div className="ml-2">
-          <h5 className="font-semibold">{name}</h5>
+          <h5 className="font-semibold truncate">{displayName}</h5>
           <p
             className={`text-sm ${
               isOnline ? "text-green-500" : "text-muted-foreground"

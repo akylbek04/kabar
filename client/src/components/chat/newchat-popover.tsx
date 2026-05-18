@@ -2,7 +2,13 @@ import { memo, useEffect, useState } from "react";
 import { useChat } from "@/hooks/use-chat";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { ArrowLeft, PenBoxIcon, Search, UsersIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  LayoutGrid,
+  PenBoxIcon,
+  Search,
+  UsersIcon,
+} from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -14,16 +20,17 @@ import AvatarWithBadge from "../avatar-with-badge";
 import { Checkbox } from "../ui/checkbox";
 import { useNavigate } from "react-router-dom";
 
+type CreateMode = "chat" | "group" | "supergroup";
+
 export const NewChatPopover = memo(() => {
   const navigate = useNavigate();
   const { fetchAllUsers, users, isUsersLoading, createChat, isCreatingChat } =
     useChat();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isGroupMode, setIsGroupMode] = useState(false);
+  const [createMode, setCreateMode] = useState<CreateMode>("chat");
   const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,31 +43,36 @@ export const NewChatPopover = memo(() => {
     );
   };
 
-  const handleBack = () => {
-    resetState();
-  };
-
   const resetState = () => {
-    setIsGroupMode(false);
+    setCreateMode("chat");
     setGroupName("");
     setSelectedUsers([]);
   };
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    resetState();
+    if (!open) resetState();
+  };
+
+  const handleBack = () => {
+    setCreateMode("chat");
+    setGroupName("");
+    setSelectedUsers([]);
   };
 
   const handleCreateGroup = async () => {
-    if (!groupName.trim() || selectedUsers?.length === 0) return;
+    if (!groupName.trim() || selectedUsers.length === 0) return;
     const response = await createChat({
-      isGroup: true,
+      isGroup: createMode === "group",
+      isSuperGroup: createMode === "supergroup",
       participants: selectedUsers,
-      groupName: groupName,
+      groupName,
     });
-    setIsOpen(false);
-    resetState();
-    navigate(`/chat/${response?._id}`);
+    if (response) {
+      setIsOpen(false);
+      resetState();
+      navigate(`/chat/${response._id}`);
+    }
   };
 
   const handleCreateChat = async (userId: string) => {
@@ -70,15 +82,23 @@ export const NewChatPopover = memo(() => {
         isGroup: false,
         participantId: userId,
       });
-      setIsOpen(false);
-      resetState();
-      navigate(`/chat/${response?._id}`);
+      if (response) {
+        setIsOpen(false);
+        resetState();
+        navigate(`/chat/${response._id}`);
+      }
     } finally {
       setLoadingUserId(null);
-      setIsOpen(false);
-      resetState();
     }
   };
+
+  const isPickerMode = createMode === "group" || createMode === "supergroup";
+  const title =
+    createMode === "supergroup"
+      ? "New Super Group"
+      : createMode === "group"
+        ? "New Group"
+        : "New Chat";
 
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -94,53 +114,37 @@ export const NewChatPopover = memo(() => {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 z-[999] p-0
-         rounded-xl min-h-[400px]
-         max-h-[80vh] flex flex-col
-        "
+        className="w-80 z-[999] p-0 rounded-xl min-h-[400px] max-h-[80vh] flex flex-col"
       >
-        <div className="border-b p-3 flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            {isGroupMode && (
-              <Button variant="ghost" size="icon" onClick={handleBack}>
-                <ArrowLeft size={16} />
-              </Button>
-            )}
-            <h3 className="text-lg font-semibold">
-              {isGroupMode ? "New Group" : "New Chat"}
-            </h3>
-          </div>
+        <PopoverHeader
+          isPickerMode={isPickerMode}
+          title={title}
+          groupName={groupName}
+          onGroupNameChange={setGroupName}
+          onBack={handleBack}
+        />
 
-          <InputGroup>
-            <InputGroupInput
-              value={isGroupMode ? groupName : ""}
-              onChange={
-                isGroupMode ? (e) => setGroupName(e.target.value) : undefined
-              }
-              placeholder={isGroupMode ? "Enter group name" : "Search name"}
-            />
-            <InputGroupAddon>
-              {isGroupMode ? <UsersIcon /> : <Search />}
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
-
-        <div
-          className="flex-1 justify-center overflow-y-auto
-         px-1 py-1 space-y-1
-        "
-        >
+        <div className="flex-1 justify-center overflow-y-auto px-1 py-1 space-y-1">
           {isUsersLoading ? (
             <Spinner className="w-6 h-6" />
-          ) : users && users?.length === 0 ? (
+          ) : users?.length === 0 ? (
             <div className="text-center text-muted-foreground">
               No users found
             </div>
-          ) : !isGroupMode ? (
+          ) : !isPickerMode ? (
             <>
-              <NewGroupItem
+              <CreateOptionItem
+                icon={<UsersIcon className="size-4 text-primary" />}
+                label="New Group"
                 disabled={isCreatingChat}
-                onClick={() => setIsGroupMode(true)}
+                onClick={() => setCreateMode("group")}
+              />
+              <CreateOptionItem
+                icon={<LayoutGrid className="size-4 text-primary" />}
+                label="New Super Group"
+                description="Groups with topics, like Telegram"
+                disabled={isCreatingChat}
+                onClick={() => setCreateMode("supergroup")}
               />
               {users?.map((user) => (
                 <ChatUserItem
@@ -164,7 +168,7 @@ export const NewChatPopover = memo(() => {
           )}
         </div>
 
-        {isGroupMode && (
+        {isPickerMode && (
           <div className="border-t p-3">
             <Button
               onClick={handleCreateGroup}
@@ -176,7 +180,9 @@ export const NewChatPopover = memo(() => {
               }
             >
               {isCreatingChat && <Spinner className="w-4 h-4" />}
-              Create Group
+              {createMode === "supergroup"
+                ? "Create Super Group"
+                : "Create Group"}
             </Button>
           </div>
         )}
@@ -185,6 +191,47 @@ export const NewChatPopover = memo(() => {
   );
 });
 NewChatPopover.displayName = "NewChatPopover";
+
+function PopoverHeader({
+  isPickerMode,
+  title,
+  groupName,
+  onGroupNameChange,
+  onBack,
+}: {
+  isPickerMode: boolean;
+  title: string;
+  groupName: string;
+  onGroupNameChange: (v: string) => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="border-b p-3 flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        {isPickerMode && (
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft size={16} />
+          </Button>
+        )}
+        <h3 className="text-lg font-semibold">{title}</h3>
+      </div>
+
+      <InputGroup>
+        <InputGroupInput
+          value={isPickerMode ? groupName : ""}
+          onChange={
+            isPickerMode ? (e) => onGroupNameChange(e.target.value) : undefined
+          }
+          placeholder={isPickerMode ? "Enter group name" : "Search name"}
+          readOnly={!isPickerMode}
+        />
+        <InputGroupAddon>
+          {isPickerMode ? <UsersIcon /> : <Search />}
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  );
+}
 
 const UserAvatar = memo(({ user }: { user: UserType }) => (
   <>
@@ -195,28 +242,38 @@ const UserAvatar = memo(({ user }: { user: UserType }) => (
     </div>
   </>
 ));
-
 UserAvatar.displayName = "UserAvatar";
 
-const NewGroupItem = memo(
-  ({ disabled, onClick }: { disabled: boolean; onClick: () => void }) => (
+const CreateOptionItem = memo(
+  ({
+    icon,
+    label,
+    description,
+    disabled,
+    onClick,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    description?: string;
+    disabled: boolean;
+    onClick: () => void;
+  }) => (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="w-full flex items-center
-       gap-2 p-2 rounded-sm hover:bg-accent
-       transition-colors text-left disabled:opacity-50
-      "
+      className="w-full flex items-center gap-2 p-2 rounded-sm hover:bg-accent transition-colors text-left disabled:opacity-50"
     >
-      <div className="bg-primary/10 p-2 rounded-full">
-        <UsersIcon className="size-4 text-primary" />
+      <div className="bg-primary/10 p-2 rounded-full">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-medium">{label}</span>
+        {description && (
+          <p className="text-xs text-muted-foreground">{description}</p>
+        )}
       </div>
-      <span>New Group</span>
     </button>
   )
 );
-
-NewGroupItem.displayName = "NewGroupItem";
+CreateOptionItem.displayName = "CreateOptionItem";
 
 const ChatUserItem = memo(
   ({
@@ -231,10 +288,7 @@ const ChatUserItem = memo(
     onClick: (id: string) => void;
   }) => (
     <button
-      className="
-      relative w-full flex items-center gap-2 p-2
-    rounded-sm hover:bg-accent
-       transition-colors text-left disabled:opacity-50"
+      className="relative w-full flex items-center gap-2 p-2 rounded-sm hover:bg-accent transition-colors text-left disabled:opacity-50"
       disabled={isLoading || disabled}
       onClick={() => onClick(user._id)}
     >
@@ -243,7 +297,6 @@ const ChatUserItem = memo(
     </button>
   )
 );
-
 ChatUserItem.displayName = "ChatUserItem";
 
 const GroupUserItem = memo(
@@ -258,10 +311,7 @@ const GroupUserItem = memo(
   }) => (
     <label
       role="button"
-      className="w-full flex items-center gap-2 p-2
-      rounded-sm hover:bg-accent
-       transition-colors text-left
-      "
+      className="w-full flex items-center gap-2 p-2 rounded-sm hover:bg-accent transition-colors text-left"
     >
       <UserAvatar user={user} />
       <Checkbox
@@ -271,5 +321,4 @@ const GroupUserItem = memo(
     </label>
   )
 );
-
 GroupUserItem.displayName = "GroupUserItem";

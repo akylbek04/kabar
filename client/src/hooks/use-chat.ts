@@ -6,6 +6,7 @@ import type {
   CreateChatType,
   CreateMessageType,
   MessageType,
+  TopicType,
 } from "@/types/chat.type";
 import { API } from "@/lib/axios-client";
 import { toast } from "sonner";
@@ -18,6 +19,8 @@ interface ChatState {
   singleChat: {
     chat: ChatType;
     messages: MessageType[];
+    topics: TopicType[];
+    activeTopicId: string | null;
   } | null;
 
   currentAIStreamId: string | null;
@@ -27,11 +30,13 @@ interface ChatState {
   isCreatingChat: boolean;
   isSingleChatLoading: boolean;
   isSendingMsg: boolean;
+  isCreatingTopic: boolean;
 
   fetchAllUsers: () => void;
   fetchChats: () => void;
   createChat: (payload: CreateChatType) => Promise<ChatType | null>;
-  fetchSingleChat: (chatId: string) => void;
+  fetchSingleChat: (chatId: string, topicId?: string) => void;
+  createTopic: (chatId: string, title: string) => Promise<TopicType | null>;
   sendMessage: (payload: CreateMessageType) => void;
 
   addNewChat: (newChat: ChatType) => void;
@@ -50,6 +55,7 @@ export const useChat = create<ChatState>()((set, get) => ({
   isCreatingChat: false,
   isSingleChatLoading: false,
   isSendingMsg: false,
+  isCreatingTopic: false,
 
   currentAIStreamId: null,
 
@@ -84,31 +90,71 @@ export const useChat = create<ChatState>()((set, get) => ({
         ...payload,
       });
       get().addNewChat(response.data.chat);
-      toast.success("Chat created successfully");
+      const label = payload.isSuperGroup
+        ? "Super group"
+        : payload.isGroup
+          ? "Group"
+          : "Chat";
+      toast.success(`${label} created successfully`);
       return response.data.chat;
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chats");
+      toast.error(error?.response?.data?.message || "Failed to create chat");
       return null;
     } finally {
       set({ isCreatingChat: false });
     }
   },
 
-  fetchSingleChat: async (chatId: string) => {
+  fetchSingleChat: async (chatId: string, topicId?: string) => {
     set({ isSingleChatLoading: true });
     try {
-      const { data } = await API.get(`/chat/${chatId}`);
-      set({ singleChat: data });
+      const { data } = await API.get(`/chat/${chatId}`, {
+        params: topicId ? { topicId } : undefined,
+      });
+      set({
+        singleChat: {
+          chat: data.chat,
+          messages: data.messages,
+          topics: data.topics || [],
+          activeTopicId: data.activeTopicId || null,
+        },
+      });
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chats");
+      toast.error(error?.response?.data?.message || "Failed to fetch chat");
     } finally {
       set({ isSingleChatLoading: false });
     }
   },
 
+  createTopic: async (chatId: string, title: string) => {
+    set({ isCreatingTopic: true });
+    try {
+      const { data } = await API.post(`/chat/${chatId}/topics`, { title });
+      const topic = data.topic as TopicType;
+
+      set((state) => {
+        if (state.singleChat?.chat._id !== chatId) return state;
+        return {
+          singleChat: {
+            ...state.singleChat,
+            topics: [topic, ...state.singleChat.topics],
+          },
+        };
+      });
+
+      toast.success("Topic created");
+      return topic;
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to create topic");
+      return null;
+    } finally {
+      set({ isCreatingTopic: false });
+    }
+  },
+
   sendMessage: async (payload: CreateMessageType) => {
     set({ isSendingMsg: true });
-    const { chatId, replyTo, content, file } = payload;
+    const { chatId, topicId, replyTo, content, file } = payload;
     const { user } = useAuth.getState();
 
     if (!chatId || !user?._id) return;
@@ -123,6 +169,7 @@ export const useChat = create<ChatState>()((set, get) => ({
     const tempMessage = {
       _id: tempUserId,
       chatId,
+      topicId: topicId || null,
       content: content || "",
       image: tempImageUrl,
       sender: user,
@@ -145,6 +192,7 @@ export const useChat = create<ChatState>()((set, get) => ({
     try {
       const formData = new FormData();
       formData.append("chatId", chatId);
+      if (topicId) formData.append("topicId", topicId);
       if (content?.trim()) formData.append("content", content.trim());
       if (replyTo?._id) formData.append("replyToId", replyTo._id);
       if (file) formData.append("file", file);
@@ -185,7 +233,6 @@ export const useChat = create<ChatState>()((set, get) => ({
         (c) => c._id === newChat._id
       );
       if (existingChatIndex !== -1) {
-        //move the chat to the top
         return {
           chats: [newChat, ...state.chats.filter((c) => c._id !== newChat._id)],
         };
@@ -213,9 +260,17 @@ export const useChat = create<ChatState>()((set, get) => ({
   addNewMessage: (chatId, message) => {
     const chat = get().singleChat;
     if (chat?.chat._id === chatId) {
+      const activeTopicId = chat.activeTopicId;
+      if (
+        activeTopicId &&
+        message.topicId &&
+        message.topicId !== activeTopicId
+      ) {
+        return;
+      }
       set({
         singleChat: {
-          chat: chat.chat,
+          ...chat,
           messages: [...chat.messages, message],
         },
       });
@@ -227,36 +282,35 @@ export const useChat = create<ChatState>()((set, get) => ({
       const replaceUser = (user: UserType) =>
         user._id === updatedUser._id ? { ...user, ...updatedUser } : user;
 
-      // Update participants & lastMessage sender in all chats
       const chats = state.chats.map((chat) => ({
         ...chat,
         participants: chat.participants.map(replaceUser),
         lastMessage: chat.lastMessage
           ? {
-            ...chat.lastMessage,
-            sender: chat.lastMessage.sender
-              ? replaceUser(chat.lastMessage.sender)
-              : null,
-          }
+              ...chat.lastMessage,
+              sender: chat.lastMessage.sender
+                ? replaceUser(chat.lastMessage.sender)
+                : null,
+            }
           : chat.lastMessage,
       }));
 
-      // Update users list
       const users = state.users.map(replaceUser);
 
-      // Update single chat view (participants + messages)
       const singleChat = state.singleChat
         ? {
-          chat: {
-            ...state.singleChat.chat,
-            participants:
-              state.singleChat.chat.participants.map(replaceUser),
-          },
-          messages: state.singleChat.messages.map((msg) => ({
-            ...msg,
-            sender: msg.sender ? replaceUser(msg.sender) : null,
-          })),
-        }
+            chat: {
+              ...state.singleChat.chat,
+              participants:
+                state.singleChat.chat.participants.map(replaceUser),
+            },
+            messages: state.singleChat.messages.map((msg) => ({
+              ...msg,
+              sender: msg.sender ? replaceUser(msg.sender) : null,
+            })),
+            topics: state.singleChat.topics,
+            activeTopicId: state.singleChat.activeTopicId,
+          }
         : null;
 
       return { chats, users, singleChat };

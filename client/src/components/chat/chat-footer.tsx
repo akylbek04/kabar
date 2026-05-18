@@ -17,12 +17,14 @@ import {
 
 interface Props {
   chatId: string | null;
+  topicId?: string | null;
   currentUserId: string | null;
   replyTo: MessageType | null;
   onCancelReply: () => void;
 }
 const ChatFooter = ({
   chatId,
+  topicId,
   currentUserId,
   replyTo,
   onCancelReply,
@@ -78,6 +80,7 @@ const ChatFooter = ({
 
     sendMessage({
       chatId,
+      topicId,
       content: values.message,
       file: file || undefined,
       replyTo: replyTo,

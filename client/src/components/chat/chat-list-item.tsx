@@ -1,4 +1,4 @@
-import { getOtherUserAndGroup } from "@/lib/helper";
+import { getChatKind, getOtherUserAndGroup } from "@/lib/helper";
 import { cn } from "@/lib/utils";
 import type { ChatType } from "@/types/chat.type";
 import { useLocation } from "react-router-dom";
@@ -19,11 +19,15 @@ const ChatListItem = ({ chat, currentUserId, onClick }: PropsType) => {
     currentUserId
   );
 
+  const chatKind = getChatKind(chat);
+
   const getLastMessageText = () => {
     if (!lastMessage) {
       if (isGroup) {
         return chat.createdBy === currentUserId
-          ? "Group created"
+          ? chatKind === "supergroup"
+            ? "Super group created"
+            : "Group created"
           : "You were added";
       }
       return status || "Send a message";

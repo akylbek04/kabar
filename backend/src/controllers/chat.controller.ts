@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { HTTPSTATUS } from "../config/http.config";
-import { chatIdSchema, createChatSchema } from "../validators/chat.validator";
+import {
+  chatIdSchema,
+  createChatSchema,
+  getSingleChatQuerySchema,
+} from "../validators/chat.validator";
 import {
   createChatService,
   getSingleChatService,
@@ -38,13 +42,17 @@ export const getSingleChatController = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
     const { id } = chatIdSchema.parse(req.params);
+    const { topicId } = getSingleChatQuerySchema.parse(req.query);
 
-    const { chat, messages } = await getSingleChatService(id, userId);
+    const { chat, messages, topics, activeTopicId } =
+      await getSingleChatService(id, userId, topicId);
 
     return res.status(HTTPSTATUS.OK).json({
       message: "User chats retrieved successfully",
       chat,
       messages,
+      topics,
+      activeTopicId,
     });
   }
 );

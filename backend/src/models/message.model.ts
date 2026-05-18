@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface MessageDocument extends Document {
   chatId: mongoose.Types.ObjectId;
+  topicId?: mongoose.Types.ObjectId | null;
   sender: mongoose.Types.ObjectId;
   content?: string;
   image?: string;
@@ -16,6 +17,11 @@ const messageSchema = new Schema<MessageDocument>(
       type: Schema.Types.ObjectId,
       ref: "Chat",
       required: true,
+    },
+    topicId: {
+      type: Schema.Types.ObjectId,
+      ref: "Topic",
+      default: null,
     },
     content: { type: String },
     image: { type: String },
@@ -34,6 +40,8 @@ const messageSchema = new Schema<MessageDocument>(
     timestamps: true,
   }
 );
+
+messageSchema.index({ chatId: 1, topicId: 1, createdAt: 1 });
 
 const MessageModel = mongoose.model<MessageDocument>("Message", messageSchema);
 

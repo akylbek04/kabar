@@ -7,6 +7,10 @@ import {
   getUserChatsController,
 } from "../controllers/chat.controller";
 import { sendMessageController } from "../controllers/message.controller";
+import {
+  createTopicController,
+  getTopicsController,
+} from "../controllers/topic.controller";
 
 const chatRoutes = Router()
   .use(passportAuthenticateJwt)
@@ -17,6 +21,8 @@ const chatRoutes = Router()
     sendMessageController
   )
   .get("/all", getUserChatsController)
+  .get("/:id/topics", getTopicsController)
+  .post("/:id/topics", createTopicController)
   .get("/:id", getSingleChatController);
 
 export default chatRoutes;

@@ -1,9 +1,12 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export type ChatType = "dm" | "group" | "supergroup";
+
 export interface ChatDocument extends Document {
   participants: mongoose.Types.ObjectId[];
   lastMessage: mongoose.Types.ObjectId;
   isGroup: boolean;
+  chatType: ChatType;
   groupName: string;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -27,6 +30,11 @@ const chatSchema = new Schema<ChatDocument>(
     isGroup: {
       type: Boolean,
       default: false,
+    },
+    chatType: {
+      type: String,
+      enum: ["dm", "group", "supergroup"],
+      default: "dm",
     },
     groupName: {
       type: String,

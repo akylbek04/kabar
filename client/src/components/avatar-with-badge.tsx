@@ -1,4 +1,4 @@
-import groupImg from "@/assets/group-img.png";
+import { Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { cn } from "@/lib/utils";
 import { getMediaUrl } from "@/lib/helper";
@@ -20,37 +20,24 @@ const AvatarWithBadge = ({
   size = "w-8 h-8",
   className,
 }: Props) => {
-  const avatar = isGroup ? groupImg : getMediaUrl(src);
+  const avatarUrl = isGroup ? undefined : getMediaUrl(src);
 
   return (
-    <div
-      className="relative
-    shrink-0"
-    >
+    <div className="relative shrink-0">
       <Avatar className={size}>
-        <AvatarImage src={avatar} />
+        {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
         <AvatarFallback
           className={cn(
-            `bg-primary/10
-         text-primary font-semibold
-        `,
-            className && className
+            "bg-primary/10 text-primary font-semibold",
+            className
           )}
         >
-          {name?.charAt(0)}
+          {isGroup ? <Users className="size-4" /> : name?.charAt(0)}
         </AvatarFallback>
       </Avatar>
 
       {isOnline && !isGroup && (
-        <span
-          className="absolute
-          bottom-0
-          right-0
-          h-2.5 w-2.5 rounded-full
-          border-2
-          bg-green-500
-          "
-        />
+        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 bg-green-500" />
       )}
     </div>
   );
