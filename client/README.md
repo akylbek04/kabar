@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# Kabar — Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 single-page app built with Vite, TypeScript, Tailwind CSS v4, and Shadcn/UI. Talks to the Kabar backend over REST (Axios) and Socket.io; supports WebRTC calls when TURN is configured.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 18+
+- Kabar backend running (see [backend/README.md](../backend/README.md))
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd client
+npm install
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Edit `.env`, then start the dev server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Build for production:
+
+```bash
+npm run build
+npm run preview   # serve dist locally
+```
+
+## Environment variables
+
+Create `client/.env`:
+
+```env
+VITE_API_URL=http://localhost:8000
+
+# Optional — WebRTC TURN server for voice/video calls
+VITE_TURN_URL=turns:your-turn-host:443
+VITE_TURN_USERNAME=your_turn_username
+VITE_TURN_CREDENTIAL=your_turn_credential
+```
+
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `VITE_API_URL` | Yes (dev) | Backend origin for API and Socket.io |
+| `VITE_TURN_URL` | No | TURN server URL for WebRTC |
+| `VITE_TURN_USERNAME` | No | TURN username |
+| `VITE_TURN_CREDENTIAL` | No | TURN password |
+
+In production builds, the app uses `/` as the API base; configure your host or reverse proxy to forward `/api` and WebSocket traffic to the backend.
+
+Ensure `FRONTEND_ORIGIN` on the backend matches this app's URL (including port).
+
+## Scripts
+
+| Command | Description |
+| ------- | ----------- |
+| `npm run dev` | Vite dev server with HMR |
+| `npm run build` | Typecheck + production bundle to `dist/` |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+
+## Project structure
+
+```
+client/
+├── src/
+│   ├── components/   # UI, chat, call overlays
+│   ├── hooks/        # auth, chat, socket, notifications, calls
+│   ├── layouts/
+│   ├── lib/          # axios, webrtc, helpers
+│   ├── pages/
+│   ├── routes/
+│   └── types/
+├── public/
+├── index.html
+├── vite.config.ts
+└── components.json   # Shadcn/UI config
+```
+
+## Key integrations
+
+- **REST**: `src/lib/axios-client.ts` — `VITE_API_URL/api` in development
+- **Socket.io**: `src/hooks/use-socket.ts` — connects with credentials to the backend
+- **WebRTC**: `src/lib/webrtc.ts` — uses `VITE_TURN_*` when placing calls
+
+## Path alias
+
+`@/` maps to `src/` (see `vite.config.ts`).

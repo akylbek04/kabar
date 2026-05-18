@@ -1,153 +1,126 @@
-# 💬 Kabar – Real-Time Messenger Platform
+# Kabar — Real-Time Messenger
 
-A modern, full-stack real-time messaging platform built with the MERN stack and WebSockets.
+Kabar is a full-stack real-time messaging app: one-on-one and group chats, topics, presence, file uploads, voice/video calls (WebRTC), and light/dark UI.
 
----
+## Monorepo layout
 
-## 🗝️ Key Features
+| Package | Description |
+| -------- | ----------- |
+| [`backend/`](./backend/) | Express + TypeScript API, MongoDB, Socket.io, JWT auth |
+| [`client/`](./client/) | React + Vite frontend (Tailwind v4, Shadcn/UI) |
+| [`websocket-example/`](./websocket-example/) | Standalone Socket.io playground for learning events & rooms |
 
-- ✅ Authentication with JWT & Secure Cookies
-- 🔌 Real-Time Messaging via WebSocket (Socket.io)
-- 💬 One-on-One & Group Chats
-- 👥 Join & Leave Rooms in Real-Time
-- 🟢 Online / Offline User Presence
-- 💬 Reply to Specific Messages
-- ⚡ Real-Time Last Message Updates
-- 👤 User Profiles with Avatars, Descriptions & Statuses
-- 📁 Image Upload with Cloudinary
-- 🌗 Light & Dark Mode
-- 📱 Fully Responsive UI
-- 🎨 Styled with **Tailwind v4** + **Shadcn/UI**
-- 🧩 Built with **Node.js**, **Express**, **MongoDB**, **React**, and **TypeScript**
+See each package README for setup details.
 
----
+## Features
 
-## 🛠️ Tech Stack
+- JWT authentication with HTTP-only cookies
+- Real-time messaging, presence, and chat updates (Socket.io)
+- One-on-one and group chats with topics
+- Reply to messages, last-message previews
+- User profiles with avatars and status
+- Local file uploads (avatars & message attachments)
+- WebRTC voice/video calls with TURN support
+- Light and dark mode, responsive layout
 
-| Layer      | Technology                          |
-| ---------- | ----------------------------------- |
-| Frontend   | React, TypeScript, Vite, Tailwind v4, Shadcn/UI |
-| Backend    | Node.js, Express, TypeScript        |
-| Database   | MongoDB (Mongoose)                  |
-| Auth       | Passport.js, JWT, Cookies           |
-| Real-Time  | Socket.io                           |
-| Storage    | Cloudinary                          |
+## Tech stack
 
----
+| Layer | Stack |
+| ----- | ----- |
+| Frontend | React 19, TypeScript, Vite, Tailwind v4, Shadcn/UI, Zustand |
+| Backend | Node.js, Express 5, TypeScript, Mongoose |
+| Database | MongoDB |
+| Real-time | Socket.io |
+| Auth | Passport JWT, cookies |
 
-## 📁 Project Structure
+## Prerequisites
 
-```
-kabar/
-├── backend/          # Express API server
-│   └── src/
-│       ├── config/       # DB, env, cloudinary, passport config
-│       ├── controllers/  # Route handlers
-│       ├── middlewares/   # Auth, error handling
-│       ├── models/       # Mongoose schemas
-│       ├── routes/       # API routes
-│       ├── services/     # Business logic
-│       ├── validators/   # Zod validation schemas
-│       └── lib/          # Socket.io setup
-├── client/           # React frontend (Vite)
-│   └── src/
-│       ├── components/   # UI components
-│       ├── hooks/        # Custom hooks (auth, chat, socket)
-│       ├── pages/        # Route pages
-│       ├── lib/          # Axios client, helpers
-│       └── types/        # TypeScript types
-└── websocket-example/  # Socket.io example server
-```
+- Node.js 18+
+- MongoDB (Atlas or local)
 
----
+## Quick start
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js v18+
-- MongoDB Atlas account (or local MongoDB)
-- Cloudinary account
-
-### 1. Clone the repository
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/your-username/kabar.git
 cd kabar
 ```
 
-### 2. Backend Setup
+Install dependencies in each package you plan to run:
+
+```bash
+cd backend && npm install && cd ..
+cd client && npm install && cd ..
+```
+
+### 2. Backend
 
 ```bash
 cd backend
-npm install
-```
-
-Create a `backend/.env` file:
-
-```env
-NODE_ENV=development
-PORT=8000
-
-MONGO_URI=your_mongodb_connection_string
-
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=15m
-
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-```
-
-Start the backend:
-
-```bash
+cp .env.example .env   # then edit values
 npm run dev
 ```
 
-### 3. Frontend Setup
+API runs at `http://localhost:8000` by default. Health check: `GET /health`.
+
+### 3. Client
 
 ```bash
 cd client
-npm install
-```
-
-Create a `client/.env` file:
-
-```env
-VITE_API_URL=http://localhost:8000
-```
-
-Start the frontend:
-
-```bash
+cp .env.example .env   # then edit values
 npm run dev
 ```
 
-The app will be available at `http://localhost:5174`.
+App runs at `http://localhost:5173` (Vite default) unless configured otherwise. Set `FRONTEND_ORIGIN` on the backend to match your client URL.
 
----
+### 4. WebSocket example (optional)
 
-## 📡 API Endpoints
+A minimal Socket.io server for experimenting with broadcasts, rooms, and events:
 
-### Auth
-| Method | Endpoint              | Description       |
-| ------ | --------------------- | ----------------- |
-| POST   | `/api/auth/register`  | Register user     |
-| POST   | `/api/auth/login`     | Login user        |
-| POST   | `/api/auth/logout`    | Logout user       |
+```bash
+cd websocket-example
+npm install
+npm run dev
+```
 
-### Chat
-| Method | Endpoint               | Description           |
-| ------ | ---------------------- | --------------------- |
-| POST   | `/api/chat/create`     | Create a new chat     |
-| GET    | `/api/chat/all`        | Get all user chats    |
-| GET    | `/api/chat/:id`        | Get single chat       |
-| POST   | `/api/chat/message/send` | Send a message      |
+See [`websocket-example/README.md`](./websocket-example/README.md).
 
-### User
-| Method | Endpoint          | Description        |
-| ------ | ----------------- | ------------------ |
-| GET    | `/api/user/all`   | Get all users      |
-| PUT    | `/api/user/profile` | Update profile   |
+## Environment variables
 
+| Package | File | Docs |
+| ------- | ---- | ---- |
+| Backend | `backend/.env` | [backend/README.md](./backend/README.md) |
+| Client | `client/.env` | [client/README.md](./client/README.md) |
+
+Never commit `.env` files. Use `.env.example` as a template.
+
+## API overview
+
+Base path: `/api`
+
+| Area | Prefix | Notes |
+| ---- | ------ | ----- |
+| Auth | `/api/auth` | register, login, logout, status |
+| Chat | `/api/chat` | chats, messages, topics (JWT required) |
+| User | `/api/user` | list users, update profile (JWT required) |
+
+Full endpoint list: [backend/README.md](./backend/README.md#api-endpoints).
+
+## Scripts (per package)
+
+| Location | Dev | Build | Start |
+| -------- | --- | ----- | ----- |
+| `backend/` | `npm run dev` | `npm run build` | `npm start` |
+| `client/` | `npm run dev` | `npm run build` | `npm run preview` |
+| `websocket-example/` | `npm run dev` | — | `npm start` |
+
+## Project structure
+
+```
+kabar/
+├── backend/           # Express API + Socket.io
+├── client/            # React SPA
+├── websocket-example/ # Socket.io learning demo
+└── README.md
+```
