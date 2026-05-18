@@ -42,6 +42,7 @@ export const getOtherUserAndGroup = (
       isGroup,
       isSuperGroup,
       chatKind,
+      otherUserId: undefined,
     };
   }
 
@@ -58,6 +59,7 @@ export const getOtherUserAndGroup = (
     chatKind: "dm" as ChatKind,
     isOnline,
     isAI: other?.isAI || false,
+    otherUserId: other?._id,
   };
 };
 

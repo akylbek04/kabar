@@ -15,6 +15,7 @@ export type ChatType = {
   updatedAt: string;
 };
 
+
 export type TopicType = {
   _id: string;
   chatId: string;

@@ -1,6 +1,8 @@
 import AppWrapper from "@/components/app-wrapper";
 import ChatList from "@/components/chat/chat-list";
 import MessageNotificationsListener from "@/components/message-notifications-listener";
+import CallSignalingListener from "@/components/call/call-signaling-listener";
+import CallOverlay from "@/components/call/call-overlay";
 import useChatId from "@/hooks/use-chat-id";
 import { cn } from "@/lib/utils";
 import { Outlet } from "react-router-dom";
@@ -10,6 +12,8 @@ const AppLayout = () => {
   return (
     <AppWrapper>
       <MessageNotificationsListener />
+      <CallSignalingListener />
+      <CallOverlay />
       <div className="h-full">
         {/* ChatList */}
         <div className={cn(chatId ? "hidden lg:block" : "block")}>

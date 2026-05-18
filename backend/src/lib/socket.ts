@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { Server, type Socket } from "socket.io";
 import { Env } from "../config/env.config";
 import { validateChatParticipant } from "../services/chat.service";
+import { registerCallSignaling } from "./call-signaling";
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -86,6 +87,8 @@ export const initializeSocket = (httpServer: HTTPServer) => {
         console.log(`User ${userId} left room chat:${chatId}`);
       }
     });
+
+    registerCallSignaling(io!, socket);
 
     socket.on("disconnect", () => {
       if (onlineUsers.get(userId) === newSocketId) {

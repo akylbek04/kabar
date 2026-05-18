@@ -6,6 +6,7 @@ import { create } from "zustand";
 //import { persist } from "zustand/middleware";
 import { useSocket } from "./use-socket";
 import { useNotifications } from "./use-notifications";
+import { useCall } from "./use-call";
 import { updateDocumentTitle } from "@/lib/notification-utils";
 
 interface AuthState {
@@ -67,6 +68,7 @@ export const useAuth = create<AuthState>()((set) => ({
       set({ user: null });
       useSocket.getState().disconnectSocket();
       useNotifications.getState().clearAll();
+      useCall.getState().endCall();
       updateDocumentTitle(0);
       toast.success("Logout successfully");
     } catch (err: any) {
