@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "path";
 import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
