@@ -91,11 +91,49 @@ export const getMediaUrl = (url?: string | null) => {
 };
 
 const IMAGE_EXTENSIONS = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?|heic|heif)$/i;
+const AUDIO_EXTENSIONS =
+  /\.(mp3|wav|ogg|webm|aac|flac|m4a|opus|weba|oga)$/i;
+
+const AUDIO_PREVIEW_PREFIX = "audio-preview:";
 
 export const isImageUrl = (url?: string | null) => {
   if (!url) return false;
   if (url.startsWith("data:image/")) return true;
   return IMAGE_EXTENSIONS.test(url.split("?")[0]);
+};
+
+export const isAudioUrl = (url?: string | null) => {
+  if (!url) return false;
+  if (url.startsWith(AUDIO_PREVIEW_PREFIX)) return true;
+  if (url.startsWith("data:audio/")) return true;
+  return AUDIO_EXTENSIONS.test(url.split("?")[0]);
+};
+
+export const getAudioSrc = (url: string) => {
+  if (url.startsWith(AUDIO_PREVIEW_PREFIX)) {
+    return url.slice(AUDIO_PREVIEW_PREFIX.length);
+  }
+  return getMediaUrl(url);
+};
+
+export const formatAudioDuration = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+};
+
+export const getAttachmentPreview = (
+  url?: string | null,
+  style: "plain" | "emoji" = "emoji"
+): string | null => {
+  if (!url) return null;
+  if (isImageUrl(url)) {
+    return style === "emoji" ? "📷 Photo" : "Photo";
+  }
+  if (isAudioUrl(url)) {
+    return style === "emoji" ? "🎤 Voice message" : "Voice message";
+  }
+  return style === "emoji" ? "📎 Attachment" : "Attachment";
 };
 
 export const getFileNameFromUrl = (url: string) => {

@@ -1,11 +1,11 @@
 import type { ChatType, MessageType } from "@/types/chat.type";
-import { getChatKind, getMediaUrl, getOtherUserAndGroup, isImageUrl } from "./helper";
+import { getAttachmentPreview, getChatKind, getMediaUrl, getOtherUserAndGroup } from "./helper";
 
 const APP_TITLE = "Kabar";
 
 export const getMessagePreview = (message: MessageType): string => {
   if (message.image) {
-    return isImageUrl(message.image) ? "Photo" : "Attachment";
+    return getAttachmentPreview(message.image, "plain") ?? "Attachment";
   }
   return message.content?.trim() || "New message";
 };

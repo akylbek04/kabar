@@ -7,10 +7,14 @@ import {
   formatChatTime,
   getMediaUrl,
   getFileNameFromUrl,
+  getAttachmentPreview,
+  getAudioSrc,
+  isAudioUrl,
   isImageUrl,
 } from "@/lib/helper";
 import { Button } from "../ui/button";
 import { ReplyIcon } from "lucide-react";
+import AudioMessagePlayer from "./audio-message-player";
 
 interface Props {
   message: MessageType;
@@ -89,21 +93,23 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
                 "
                 >
                   {message?.replyTo?.content ||
-                    (message?.replyTo?.image
-                      ? isImageUrl(message.replyTo.image)
-                        ? "📷 Photo"
-                        : "📎 Attachment"
-                      : "")}
+                    getAttachmentPreview(message?.replyTo?.image) ||
+                    ""}
                 </p>
               </div>
             )}
 
-            {message?.image && (
-              isImageUrl(message.image) ? (
+            {message?.image &&
+              (isImageUrl(message.image) ? (
                 <img
                   src={getMediaUrl(message.image)}
                   alt=""
                   className="rounded-lg max-w-xs"
+                />
+              ) : isAudioUrl(message.image) ? (
+                <AudioMessagePlayer
+                  src={getAudioSrc(message.image)}
+                  isCurrentUser={isCurrentUser}
                 />
               ) : (
                 <a
@@ -114,8 +120,7 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
                 >
                   {getFileNameFromUrl(message.image)}
                 </a>
-              )
-            )}
+              ))}
 
             {message.content && <p>{message.content}</p>}
           </div>

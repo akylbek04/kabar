@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import type { TopicType } from "@/types/chat.type";
 import { cn } from "@/lib/utils";
-import { formatChatTime, isImageUrl } from "@/lib/helper";
+import { formatChatTime, getAttachmentPreview } from "@/lib/helper";
 
 interface Props {
   topics: TopicType[];
@@ -36,7 +36,7 @@ const TopicSidebar = ({
     const last = topic.lastMessage;
     if (!last) return "No messages yet";
     if (last.image) {
-      return isImageUrl(last.image) ? "Photo" : "Attachment";
+      return getAttachmentPreview(last.image, "plain") ?? "Attachment";
     }
     return last.content || "No messages yet";
   };

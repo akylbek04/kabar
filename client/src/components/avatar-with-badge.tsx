@@ -28,7 +28,7 @@ const AvatarWithBadge = ({
         {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
         <AvatarFallback
           className={cn(
-            "bg-primary/10 text-primary font-semibold",
+            "bg-primary/10 text-foreground font-semibold",
             className
           )}
         >

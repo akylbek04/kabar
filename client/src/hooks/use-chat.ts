@@ -163,7 +163,9 @@ export const useChat = create<ChatState>()((set, get) => ({
     const tempImageUrl = file
       ? file.type.startsWith("image/")
         ? URL.createObjectURL(file)
-        : file.name
+        : file.type.startsWith("audio/")
+          ? `audio-preview:${URL.createObjectURL(file)}`
+          : file.name
       : null;
 
     const tempMessage = {
@@ -202,8 +204,11 @@ export const useChat = create<ChatState>()((set, get) => ({
       });
       const { userMessage } = data;
 
-      if (tempImageUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(tempImageUrl);
+      if (tempImageUrl?.startsWith("blob:") || tempImageUrl?.startsWith("audio-preview:")) {
+        const blobUrl = tempImageUrl.startsWith("audio-preview:")
+          ? tempImageUrl.slice("audio-preview:".length)
+          : tempImageUrl;
+        URL.revokeObjectURL(blobUrl);
       }
 
       set((state) => {
@@ -218,8 +223,11 @@ export const useChat = create<ChatState>()((set, get) => ({
         };
       });
     } catch (error: any) {
-      if (tempImageUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(tempImageUrl);
+      if (tempImageUrl?.startsWith("blob:") || tempImageUrl?.startsWith("audio-preview:")) {
+        const blobUrl = tempImageUrl.startsWith("audio-preview:")
+          ? tempImageUrl.slice("audio-preview:".length)
+          : tempImageUrl;
+        URL.revokeObjectURL(blobUrl);
       }
       toast.error(error?.response?.data?.message || "Failed to send message");
     } finally {

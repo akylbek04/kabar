@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import type { ChatType } from "@/types/chat.type";
 import { useLocation } from "react-router-dom";
 import AvatarWithBadge from "../avatar-with-badge";
-import { formatChatTime, isImageUrl } from "../../lib/helper";
+import { formatChatTime, getAttachmentPreview } from "../../lib/helper";
 import { useNotifications } from "@/hooks/use-notifications";
 
 interface PropsType {
@@ -37,7 +37,7 @@ const ChatListItem = ({ chat, currentUserId, onClick }: PropsType) => {
       return status || "Send a message";
     }
     if (lastMessage.image) {
-      return isImageUrl(lastMessage.image) ? "📷 Photo" : "📎 Attachment";
+      return getAttachmentPreview(lastMessage.image) ?? "📎 Attachment";
     }
 
     if (isGroup && lastMessage.sender) {
