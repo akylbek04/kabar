@@ -43,9 +43,9 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
   );
 
   const messageClass = cn(
-    "min-w-[200px] px-3 py-2 text-sm break-words shadow-sm",
+    "min-w-[200px] px-3 py-2 text-sm break-words shadow-sm text-foreground",
     isCurrentUser
-      ? "bg-accent dark:bg-primary/40 rounded-tr-xl rounded-l-xl"
+      ? "bg-accent dark:bg-secondary rounded-tr-xl rounded-l-xl"
       : "bg-[#F5F5F5] dark:bg-accent rounded-bl-xl rounded-r-xl"
   );
 
@@ -78,7 +78,7 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
 
             <div className="flex items-center gap-2 mb-0.5 pb-1">
               <span className="text-xs font-semibold">{senderName}</span>
-              <span className="text-[11px] text-gray-700 dark:text-gray-300">
+              <span className="text-[11px] text-muted-foreground">
                 {formatChatTime(message?.createdAt)}
               </span>
             </div>
@@ -116,7 +116,7 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
                   href={getMediaUrl(message.image)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-primary underline underline-offset-2"
+                  className="inline-flex items-center gap-2 break-all font-medium text-foreground underline underline-offset-2 hover:opacity-80"
                 >
                   {getFileNameFromUrl(message.image)}
                 </a>
