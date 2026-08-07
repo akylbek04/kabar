@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import passport from "passport";
 import { Env } from "./config/env.config";
 import { UPLOAD_ROOT } from "./config/multer.config";
@@ -46,6 +47,15 @@ app.get(
   })
 );
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { message: "Too many attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use("/api/auth", authLimiter);
 app.use("/api", routes);
 
 if (Env.NODE_ENV === "production") {
