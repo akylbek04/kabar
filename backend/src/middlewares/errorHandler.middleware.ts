@@ -6,8 +6,7 @@ import { AppError, ErrorCodes } from "../utils/app-error";
 export const errorHandler: ErrorRequestHandler = (
   error,
   req,
-  res,
-  next
+  res
 ): any => {
   console.log(`Error occurred: ${req.path}`, error);
 

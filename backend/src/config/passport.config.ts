@@ -23,7 +23,7 @@ passport.use(
         const user = userId && (await findByIdUserService(userId));
         return done(null, user || false);
       } catch (error) {
-        return done(null, false);
+        return done(error, false);
       }
     }
   )
