@@ -86,26 +86,6 @@ export const createTopicService = async (
   return topic;
 };
 
-export const getTopicForChat = async (
-  chatId: string,
-  topicId: string,
-  userId: string
-) => {
-  const chat = await ChatModel.findOne({
-    _id: chatId,
-    participants: { $in: [userId] },
-  });
-
-  if (!chat) {
-    throw new NotFoundException("Chat not found or you are not authorized");
-  }
-
-  const topic = await TopicModel.findOne({ _id: topicId, chatId });
-  if (!topic) throw new NotFoundException("Topic not found");
-
-  return topic;
-};
-
 export const getDefaultTopicForChat = async (chatId: string) => {
   let topic = await TopicModel.findOne({ chatId, isGeneral: true });
   if (!topic) {
