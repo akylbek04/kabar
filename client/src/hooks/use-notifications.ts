@@ -29,8 +29,11 @@ export const useNotifications = create<NotificationState>()((set, get) => ({
   markChatAsRead: (chatId: string) => {
     set((state) => {
       if (!state.unreadByChat[chatId]) return state;
-      const { [chatId]: _, ...rest } = state.unreadByChat;
-      return { unreadByChat: rest };
+
+      const unreadByChat = { ...state.unreadByChat };
+      delete unreadByChat[chatId];
+
+      return { unreadByChat };
     });
   },
 
