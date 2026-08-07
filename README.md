@@ -1,5 +1,8 @@
 # Kabar — Real-Time Messenger
 
+![CI](https://github.com/akylbek04/kabar/actions/workflows/ci.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 Kabar is a full-stack real-time messaging app: one-on-one and group chats, topics, presence, file uploads, voice/video calls (WebRTC), and light/dark UI.
 
 ## Live demo
@@ -128,3 +131,15 @@ kabar/
 ├── websocket-example/ # Socket.io learning demo
 └── README.md
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and PR guidelines.
+
+## Security
+
+See [SECURITY.md](./SECURITY.md) for vulnerability reporting.
+
+## License
+
+This project is licensed under the MIT License — see [LICENSE](./LICENSE) for details.
