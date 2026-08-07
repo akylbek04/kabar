@@ -1,6 +1,7 @@
 {
   "name": "kabar-monorepo",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "install:all": "cd backend && npm ci && cd ../client && npm ci",
     "build": "npm run build:backend && npm run build:client",
