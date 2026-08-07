@@ -4,6 +4,7 @@ import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
+import helmet from "helmet";
 import passport from "passport";
 import { Env } from "./config/env.config";
 import { UPLOAD_ROOT } from "./config/multer.config";
@@ -21,6 +22,7 @@ const server = http.createServer(app);
 //socket
 initializeSocket(server);
 
+app.use(helmet());
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
