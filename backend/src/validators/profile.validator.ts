@@ -13,5 +13,3 @@ export const updateProfileSchema = z.object({
     .max(100, "Status must be 100 characters or less")
     .optional(),
 });
-
-export type UpdateProfileSchemaType = z.infer<typeof updateProfileSchema>;

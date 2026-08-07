@@ -6,5 +6,3 @@ export const sendMessageSchema = z.object({
   content: z.string().trim().optional(),
   replyToId: z.string().trim().optional(),
 });
-
-export type SendMessageSchemaType = z.infer<typeof sendMessageSchema>;
