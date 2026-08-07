@@ -24,15 +24,13 @@ export const createChatService = async (
     body;
 
   let chat;
-  let allParticipantIds: string[] = [];
 
   const isGroupChat = isGroup || isSuperGroup;
 
   if (isGroupChat && participants?.length && groupName) {
     const chatType: ChatType = isSuperGroup ? "supergroup" : "group";
-    allParticipantIds = [userId, ...participants];
     chat = await ChatModel.create({
-      participants: allParticipantIds,
+      participants: [userId, ...participants],
       isGroup: true,
       chatType,
       groupName,
@@ -46,10 +44,9 @@ export const createChatService = async (
     const otherUser = await UserModel.findById(participantId);
     if (!otherUser) throw new NotFoundException("User not found");
 
-    allParticipantIds = [userId, participantId];
     const existingChat = await ChatModel.findOne({
       participants: {
-        $all: allParticipantIds,
+        $all: [userId, participantId],
         $size: 2,
       },
       isGroup: false,
@@ -58,7 +55,7 @@ export const createChatService = async (
     if (existingChat) return existingChat;
 
     chat = await ChatModel.create({
-      participants: allParticipantIds,
+      participants: [userId, participantId],
       isGroup: false,
       chatType: "dm",
       createdBy: userId,

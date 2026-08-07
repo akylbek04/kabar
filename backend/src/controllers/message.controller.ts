@@ -8,8 +8,14 @@ import { BadRequestException } from "../utils/app-error";
 
 export const sendMessageController = asyncHandler(
   async (req: Request, res: Response) => {
-    const userId = (req.user?._id).toString();
+    const userId = req.user?._id;
+
+    if (!userId) {
+      throw new BadRequestException("User is not authenticated");
+    }
+
     const body = sendMessageSchema.parse(req.body);
+
     const file = req.file;
 
     if (!body.content && !file) {

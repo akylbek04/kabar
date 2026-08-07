@@ -6,8 +6,18 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src", "src/@types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "test"]
+  "include": [
+    "src",
+    "src/@types/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
+  ]
 }
