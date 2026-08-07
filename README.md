@@ -54,8 +54,8 @@ cd kabar
 Install dependencies in each package you plan to run:
 
 ```bash
-cd backend && npm install && cd ..
-cd client && npm install && cd ..
+cd backend && npm ci && cd ..
+cd client && npm ci && cd ..
 ```
 
 ### 2. Backend
@@ -84,7 +84,7 @@ A minimal Socket.io server for experimenting with broadcasts, rooms, and events:
 
 ```bash
 cd websocket-example
-npm install
+npm ci
 npm run dev
 ```
 
