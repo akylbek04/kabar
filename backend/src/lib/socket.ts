@@ -4,6 +4,9 @@ import { Server, type Socket } from "socket.io";
 import { Env } from "../config/env.config";
 import { validateChatParticipant } from "../services/chat.service";
 import { registerCallSignaling } from "./call-signaling";
+import type { ChatDocument } from "../models/chat.model";
+import type { MessageDocument } from "../models/message.model";
+import type { UserDocument } from "../models/user.model";
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -105,7 +108,7 @@ function getIO() {
 
 export const emitNewChatToParticipants = (
   participantIds: string[] = [],
-  chat: Record<string, unknown>
+  chat: ChatDocument
 ) => {
   const io = getIO();
   for (const participantId of participantIds) {
@@ -116,7 +119,7 @@ export const emitNewChatToParticipants = (
 export const emitNewMessageToChatRoom = (
   senderId: string, //userId that sent the message
   chatId: string,
-  message: Record<string, unknown>
+  message: MessageDocument
 ) => {
   const io = getIO();
   const senderSocketId = onlineUsers.get(senderId?.toString());
@@ -131,7 +134,7 @@ export const emitNewMessageToChatRoom = (
 export const emitLastMessageToParticipants = (
   participantIds: string[],
   chatId: string,
-  lastMessage: Record<string, unknown>
+  lastMessage: MessageDocument
 ) => {
   const io = getIO();
   const payload = { chatId, lastMessage };
@@ -141,7 +144,7 @@ export const emitLastMessageToParticipants = (
   }
 };
 
-export const emitProfileUpdate = (updatedUser: Record<string, unknown>) => {
+export const emitProfileUpdate = (updatedUser: UserDocument) => {
   const io = getIO();
   io.emit("user:profile-updated", updatedUser);
 };
