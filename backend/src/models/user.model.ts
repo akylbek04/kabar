@@ -15,7 +15,7 @@ export interface UserMethods {
 }
 
 export type UserDocument = HydratedDocument<UserAttrs, UserMethods>;
-type UserModelType = Model<UserAttrs, {}, UserMethods>;
+type UserModelType = Model<UserAttrs, Record<string, never>, UserMethods>;
 
 const userSchema = new Schema<UserAttrs, UserModelType, UserMethods>(
   {
