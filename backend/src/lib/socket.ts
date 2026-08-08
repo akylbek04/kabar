@@ -103,9 +103,9 @@ function getIO() {
   return io;
 }
 
-export const emitNewChatToParticpants = (
+export const emitNewChatToParticipants = (
   participantIds: string[] = [],
-  chat: any
+  chat: Record<string, unknown>
 ) => {
   const io = getIO();
   for (const participantId of participantIds) {
@@ -116,7 +116,7 @@ export const emitNewChatToParticpants = (
 export const emitNewMessageToChatRoom = (
   senderId: string, //userId that sent the message
   chatId: string,
-  message: any
+  message: Record<string, unknown>
 ) => {
   const io = getIO();
   const senderSocketId = onlineUsers.get(senderId?.toString());
@@ -131,7 +131,7 @@ export const emitNewMessageToChatRoom = (
 export const emitLastMessageToParticipants = (
   participantIds: string[],
   chatId: string,
-  lastMessage: any
+  lastMessage: Record<string, unknown>
 ) => {
   const io = getIO();
   const payload = { chatId, lastMessage };
@@ -141,7 +141,7 @@ export const emitLastMessageToParticipants = (
   }
 };
 
-export const emitProfileUpdate = (updatedUser: any) => {
+export const emitProfileUpdate = (updatedUser: Record<string, unknown>) => {
   const io = getIO();
   io.emit("user:profile-updated", updatedUser);
 };

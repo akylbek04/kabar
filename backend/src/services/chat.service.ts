@@ -1,4 +1,4 @@
-import { emitNewChatToParticpants } from "../lib/socket";
+import { emitNewChatToParticipants } from "../lib/socket";
 import ChatModel, { type ChatType } from "../models/chat.model";
 import MessageModel from "../models/message.model";
 import UserModel from "../models/user.model";
@@ -74,7 +74,7 @@ export const createChatService = async (
     return p._id?.toString();
   });
 
-  emitNewChatToParticpants(particpantIdStrings, populatedChat);
+  emitNewChatToParticipants(particpantIdStrings, populatedChat);
 
   return chat;
 };
