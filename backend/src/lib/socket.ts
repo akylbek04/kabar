@@ -63,7 +63,7 @@ export const initializeSocket = (httpServer: HTTPServer) => {
     //BroadCast online users to all socket
     io?.emit("online:users", Array.from(onlineUsers.keys()));
 
-    //create personnal room for user
+    //create personal room for user
     socket.join(`user:${userId}`);
 
     socket.on(
