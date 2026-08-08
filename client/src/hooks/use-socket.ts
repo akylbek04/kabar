@@ -17,7 +17,6 @@ export const useSocket = create<SocketState>()((set, get) => ({
 
   connectSocket: () => {
     const { socket } = get();
-    console.log(socket, "socket");
     if (socket?.connected) return;
 
     const newSocket = io(BASE_URL, {
@@ -28,11 +27,10 @@ export const useSocket = create<SocketState>()((set, get) => ({
     set({ socket: newSocket });
 
     newSocket.on("connect", () => {
-      console.log("Socket connected", newSocket.id);
+      // connected
     });
 
     newSocket.on("online:users", (userIds) => {
-      console.log("Online users", userIds);
       set({ onlineUsers: userIds });
     });
   },

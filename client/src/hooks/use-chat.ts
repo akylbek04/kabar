@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import type { UserType } from "@/types/auth.type";
 import type {
@@ -9,6 +8,7 @@ import type {
   TopicType,
 } from "@/types/chat.type";
 import { API } from "@/lib/axios-client";
+import { getErrorMessage } from "@/lib/error-utils";
 import { toast } from "sonner";
 import { useAuth } from "./use-auth";
 import { generateUUID } from "@/lib/helper";
@@ -64,8 +64,8 @@ export const useChat = create<ChatState>()((set, get) => ({
     try {
       const { data } = await API.get("/user/all");
       set({ users: data.users });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch users");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to fetch users"));
     } finally {
       set({ isUsersLoading: false });
     }
@@ -76,8 +76,8 @@ export const useChat = create<ChatState>()((set, get) => ({
     try {
       const { data } = await API.get("/chat/all");
       set({ chats: data.chats });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chats");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to fetch chats"));
     } finally {
       set({ isChatsLoading: false });
     }
@@ -97,8 +97,8 @@ export const useChat = create<ChatState>()((set, get) => ({
           : "Chat";
       toast.success(`${label} created successfully`);
       return response.data.chat;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to create chat");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to create chat"));
       return null;
     } finally {
       set({ isCreatingChat: false });
@@ -119,8 +119,8 @@ export const useChat = create<ChatState>()((set, get) => ({
           activeTopicId: data.activeTopicId || null,
         },
       });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chat");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to fetch chat"));
     } finally {
       set({ isSingleChatLoading: false });
     }
@@ -144,8 +144,8 @@ export const useChat = create<ChatState>()((set, get) => ({
 
       toast.success("Topic created");
       return topic;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to create topic");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to create topic"));
       return null;
     } finally {
       set({ isCreatingTopic: false });
@@ -222,14 +222,14 @@ export const useChat = create<ChatState>()((set, get) => ({
           },
         };
       });
-    } catch (error: any) {
+    } catch (err: unknown) {
       if (tempImageUrl?.startsWith("blob:") || tempImageUrl?.startsWith("audio-preview:")) {
         const blobUrl = tempImageUrl.startsWith("audio-preview:")
           ? tempImageUrl.slice("audio-preview:".length)
           : tempImageUrl;
         URL.revokeObjectURL(blobUrl);
       }
-      toast.error(error?.response?.data?.message || "Failed to send message");
+      toast.error(getErrorMessage(err, "Failed to send message"));
     } finally {
       set({ isSendingMsg: false });
     }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -152,8 +152,9 @@ export const useCall = create<CallState>()((set, get) => ({
           }
         }
       );
-    } catch (err: any) {
-      toast.error(err?.message || "Could not access camera/microphone");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Could not access camera/microphone";
+      toast.error(message);
       get().reset();
     }
   },
@@ -189,8 +190,9 @@ export const useCall = create<CallState>()((set, get) => ({
 
       // Callee waits for offer via socket handler
       void chatId;
-    } catch (err: any) {
-      toast.error(err?.message || "Could not access camera/microphone");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Could not access camera/microphone";
+      toast.error(message);
       get().rejectCall();
     }
   },

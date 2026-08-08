@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { API } from "@/lib/axios-client";
+import { getErrorMessage } from "@/lib/error-utils";
 import type { LoginType, RegisterType, UserType } from "@/types/auth.type";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -41,8 +41,8 @@ export const useAuth = create<AuthState>()((set) => ({
       set({ user: response.data.user });
       useSocket.getState().connectSocket();
       toast.success("Register successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Register failed");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Register failed"));
     } finally {
       set({ isSigningUp: false });
     }
@@ -54,8 +54,8 @@ export const useAuth = create<AuthState>()((set) => ({
       set({ user: response.data.user });
       useSocket.getState().connectSocket();
       toast.success("Login successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Register failed");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Login failed"));
     } finally {
       set({ isLoggingIn: false });
     }
@@ -69,8 +69,8 @@ export const useAuth = create<AuthState>()((set) => ({
       useCall.getState().endCall();
       updateDocumentTitle(0);
       toast.success("Logout successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Register failed");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Logout failed"));
     }
   },
   isAuthStatus: async () => {
@@ -79,10 +79,8 @@ export const useAuth = create<AuthState>()((set) => ({
       const response = await API.get("/auth/status");
       set({ user: response.data.user });
       useSocket.getState().connectSocket();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Authentication failed");
-      console.log(err);
-      //set({ user: null})
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Authentication failed"));
     } finally {
       set({ isAuthStatusLoading: false });
     }
@@ -103,8 +101,8 @@ export const useAuth = create<AuthState>()((set) => ({
       });
       set({ user: response.data.user });
       toast.success("Profile updated successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update profile");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to update profile"));
     } finally {
       set({ isUpdatingProfile: false });
     }
