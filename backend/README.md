@@ -11,7 +11,7 @@ Express 5 API with MongoDB, JWT authentication (Passport), local file uploads (M
 
 ```bash
 cd backend
-npm install
+npm ci
 cp .env.example .env
 ```
 
@@ -50,9 +50,9 @@ FRONTEND_ORIGIN=http://localhost:5173
 | `NODE_ENV` | No | `development` | Runtime environment |
 | `PORT` | No | `8000` | HTTP server port |
 | `MONGO_URI` | Yes | — | MongoDB connection string |
-| `JWT_SECRET` | No | `secret_jwt` | JWT signing secret (use a strong value in production) |
+| `JWT_SECRET` | Yes | — | JWT signing secret (app crashes without it) |
 | `JWT_EXPIRES_IN` | No | `15m` | Access token lifetime |
-| `FRONTEND_ORIGIN` | No | `http://localhost:5174` | Allowed CORS origin for the client |
+| `FRONTEND_ORIGIN` | No | `http://localhost:5173` | Allowed CORS origin for the client |
 
 ## Scripts
 
