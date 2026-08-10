@@ -22,9 +22,9 @@ export const sendMessageService = async (
   const { chatId, topicId, content, image, replyToId } = body;
 
   const chat = await ChatModel.findOne({
-    _id: chatId,
+    _id: new mongoose.Types.ObjectId(chatId),
     participants: {
-      $in: [userId],
+      $in: [new mongoose.Types.ObjectId(userId)],
     },
   });
 
@@ -35,7 +35,10 @@ export const sendMessageService = async (
 
   if (chatType === "supergroup") {
     if (topicId) {
-      const topic = await TopicModel.findOne({ _id: topicId, chatId });
+      const topic = await TopicModel.findOne({
+        _id: new mongoose.Types.ObjectId(topicId),
+        chatId: new mongoose.Types.ObjectId(chatId),
+      });
       if (!topic) throw new NotFoundException("Topic not found");
       resolvedTopicId = topicId;
     } else {
@@ -49,8 +52,8 @@ export const sendMessageService = async (
 
   if (replyToId) {
     const replyFilter: Record<string, unknown> = {
-      _id: replyToId,
-      chatId,
+      _id: new mongoose.Types.ObjectId(replyToId),
+      chatId: new mongoose.Types.ObjectId(chatId),
     };
     if (resolvedTopicId) replyFilter.topicId = resolvedTopicId;
 
