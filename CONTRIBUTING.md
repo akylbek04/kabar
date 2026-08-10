@@ -74,3 +74,7 @@ test: add chat service unit tests
 ## Need Help?
 
 Open an issue with the **question** label and we'll help you get started.
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
